@@ -1,5 +1,11 @@
 version: "3.11"
 services:
+  ollama:
+    image: ollama/ollama
+    ports:
+      - "11434:11434"
+    environment:
+      - OLLAMA_HOST=0.0.0.0
   litellm:
     build:
       context: .
@@ -18,10 +24,12 @@ services:
     environment:
         DATABASE_URL: "postgresql://llmproxy:dbpassword9090@db:5432/litellm"
         STORE_MODEL_IN_DB: "True" # allows adding models to proxy via UI
+        LITELLM_API_BASE: http://ollama:11434
     env_file:
       - .env # Load local .env file
     depends_on:
       - db  # Indicates that this service depends on the 'db' service, ensuring 'db' starts first
+      - ollama
     healthcheck:  # Defines the health check configuration for the container
       test: [ "CMD", "curl", "-f", "http://localhost:4000/health/liveliness || exit 1" ]  # Command to execute for health check
       interval: 30s  # Perform health check every 30 seconds
